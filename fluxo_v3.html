@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fluxo Comercial · Gabriel Sales</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300;400;500;600&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#06070d;--surf:#0d1019;--surf2:#12162a;--surf3:#1a2035;
+  --b1:rgba(255,255,255,.06);--b2:rgba(255,255,255,.1);--b3:rgba(255,255,255,.16);
+  --blue:#0015FF;--blue2:#0040FF;--blue3:#4d7cff;
+  --bsoft:rgba(0,21,255,.1);--bglow:rgba(0,21,255,.25);
+  --red:#e05555;--rsoft:rgba(224,85,85,.1);--rborder:rgba(224,85,85,.3);
+  --gray:#878b9a;--gsoft:rgba(135,139,154,.1);--gborder:rgba(135,139,154,.28);
+  --amber:#e8a864;
+  --green:#58e4a4;
+  --text:#f0f2f9;--text2:#c5c9d6;--text3:#878b9a;--text4:#535766;--text5:#2f3240;
+  --font:'Sora',system-ui,sans-serif;
+  --mono:'Geist Mono','JetBrains Mono',ui-monospace,monospace;
+  --r:10px;--rl:16px;
+}
+html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+body{min-height:100vh;background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.55;overflow-x:hidden}
+
+.atm-glow{position:fixed;top:-350px;left:50%;transform:translateX(-50%);width:900px;height:800px;
+  background:radial-gradient(ellipse at 50% 40%,rgba(0,21,255,.13) 0%,rgba(0,21,255,.04) 35%,transparent 65%);
+  pointer-events:none;z-index:0}
+.atm-grid{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.18;
+  background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:36px 36px;
+  mask-image:radial-gradient(ellipse at center,#000 0%,transparent 72%);
+  -webkit-mask-image:radial-gradient(ellipse at center,#000 0%,transparent 72%)}
+
+.hdr{position:sticky;top:0;z-index:100;background:rgba(6,7,13,.88);backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);border-bottom:1px solid var(--b1)}
+.hdr-in{max-width:860px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:15px 28px}
+.hdr-l{display:flex;align-items:center;gap:13px}
+.av-wrap{position:relative;width:40px;height:40px;flex-shrink:0}
+.av{width:40px;height:40px;border-radius:50%;object-fit:cover;object-position:center 30%;
+  box-shadow:inset 0 0 0 .5px rgba(255,255,255,.22)}
+.av-badge{position:absolute;bottom:-2px;right:-2px;width:15px;height:15px;display:block;
+  filter:drop-shadow(0 0 0 2px var(--bg))}
+.hdr-info{display:flex;flex-direction:column;gap:3px}
+.hdr-name{font-size:14px;font-weight:700;color:var(--text);letter-spacing:-.015em;line-height:1.1}
+.hdr-sub{font-family:var(--mono);font-size:9.5px;color:var(--text4);letter-spacing:.06em}
+.hdr-r{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:9.5px;
+  letter-spacing:.16em;text-transform:uppercase;color:var(--text3)}
+.pdot{width:6px;height:6px;border-radius:50%;background:var(--green);
+  box-shadow:0 0 8px rgba(88,228,164,.55);animation:pulse 2.2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.7)}}
+
+.tabs-wrap{position:sticky;top:70px;z-index:99;background:rgba(6,7,13,.92);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid var(--b1)}
+.tabs{max-width:860px;margin:0 auto;display:flex;padding:0 28px;
+  overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;gap:0}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:17px 16px;font-family:var(--mono);font-size:10px;font-weight:500;
+  letter-spacing:.18em;text-transform:uppercase;color:var(--text4);cursor:pointer;
+  border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;
+  transition:color .2s,border-color .2s;display:flex;align-items:center;gap:9px}
+.tab-n{color:var(--text5);transition:color .2s}
+.tab:hover{color:var(--text2)}.tab:hover .tab-n{color:var(--text3)}
+.tab.active{color:var(--text);border-bottom-color:var(--blue2)}
+.tab.active .tab-n{color:var(--blue2)}
+
+.content{position:relative;z-index:2;max-width:860px;margin:0 auto;padding:32px 28px 80px;min-height:calc(100vh - 150px)}
+.view{display:none;animation:fadeUp .45s ease both}
+.view.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+.view-hdr{margin-bottom:30px}
+.view-eyebrow{display:inline-block;font-family:var(--mono);font-size:9.5px;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--text4);margin-bottom:12px;padding:5px 13px;
+  border:1px solid var(--b2);border-radius:100px}
+.view-title{font-size:34px;font-weight:700;letter-spacing:-.035em;line-height:1;
+  color:var(--text);margin-bottom:10px}
+.view-sub{font-size:13.5px;color:var(--text3);max-width:560px;line-height:1.6;opacity:.85}
+
+.note{display:flex;gap:10px;align-items:flex-start;background:var(--bsoft);
+  border:1px solid rgba(0,64,255,.28);border-radius:var(--r);padding:12px 15px;
+  font-size:13px;color:var(--text2);margin-bottom:20px;line-height:1.55}
+.note-ico{width:15px;height:15px;color:var(--blue2);flex-shrink:0;margin-top:1px}
+.note strong{color:var(--text);font-weight:600}
+
+.sec-lbl{display:flex;align-items:center;gap:13px;padding:28px 0 14px;
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--text3)}
+.sec-lbl::after{content:"";flex:1;height:1px;background:var(--b1)}
+.sec-num{color:var(--blue2);font-weight:500}
+.sec-lbl:first-child{padding-top:0}
+
+.step{margin-bottom:9px}
+.step-hdr{background:var(--surf);border:1px solid var(--b2);border-radius:var(--rl);
+  padding:15px 18px;cursor:pointer;display:flex;align-items:flex-start;justify-content:space-between;gap:14px;
+  transition:border-color .22s,background .22s,box-shadow .22s}
+.step-hdr:hover{border-color:rgba(0,64,255,.3);background:var(--surf2);
+  box-shadow:0 4px 20px rgba(0,21,255,.08)}
+.step-hdr.open{border-color:rgba(0,64,255,.32);border-radius:var(--rl) var(--rl) 0 0;
+  border-bottom-color:transparent;background:var(--surf2)}
+.step-meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.step-lbl{font-family:var(--mono);font-size:9px;font-weight:500;text-transform:uppercase;
+  letter-spacing:.18em;color:var(--blue2)}
+.step-lbl.red{color:var(--red)}.step-lbl.gray{color:var(--gray)}
+.step-title{font-size:15px;font-weight:600;color:var(--text);line-height:1.25;letter-spacing:-.01em}
+.step-sub{font-size:12.5px;color:var(--text4);line-height:1.4}
+.chev{color:var(--text4);font-size:13px;transition:transform .22s,color .22s;flex-shrink:0;margin-top:2px}
+.step-hdr:hover .chev{color:var(--text2)}
+.chev.open{transform:rotate(180deg);color:var(--blue2)}
+.step-body{display:none;background:var(--surf2);border:1px solid rgba(0,64,255,.28);
+  border-top:none;border-radius:0 0 var(--rl) var(--rl);padding:18px 18px 20px;
+  animation:fadeDown .25s ease}
+.step-body.open{display:block}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
+
+.red-step .step-hdr:hover,.red-step .step-hdr.open{border-color:var(--rborder);background:rgba(224,85,85,.04)}
+.red-step .step-body{border-color:var(--rborder);background:rgba(224,85,85,.03)}
+.red-step .chev.open{color:var(--red)}
+.gray-step .step-hdr:hover,.gray-step .step-hdr.open{border-color:var(--gborder);background:var(--surf2)}
+.gray-step .step-body{border-color:var(--gborder)}
+.gray-step .chev.open{color:var(--gray)}
+
+.msg-box{background:var(--bsoft);border-left:3px solid var(--blue2);
+  border-radius:0 var(--r) var(--r) 0;padding:13px 16px;font-size:13.5px;line-height:1.75;
+  color:var(--text2);margin:0 0 12px;word-break:break-word}
+.msg-box.gray{background:var(--gsoft);border-left-color:var(--gray)}
+.msg-box.red{background:var(--rsoft);border-left-color:var(--red)}
+.msg-box.amber{background:rgba(232,168,100,.1);border-left-color:var(--amber)}
+
+.copy-btn{display:inline-flex;align-items:center;gap:7px;padding:9px 15px;
+  font-family:var(--font);font-size:12px;font-weight:500;
+  border:1px solid var(--b2);border-radius:var(--r);background:rgba(255,255,255,.02);
+  color:var(--text2);cursor:pointer;transition:all .2s;margin-bottom:0}
+.copy-btn:hover{background:var(--bsoft);border-color:rgba(0,64,255,.3);color:#a3b5ff}
+.copy-btn.copied{background:rgba(0,21,255,.14);border-color:var(--blue2);color:#bcc9ff}
+.copy-btn svg{flex-shrink:0}
+
+.fork{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.fork.three{grid-template-columns:1fr 1fr 1fr}
+.fork-box{border-radius:var(--r);padding:11px 13px;font-size:12.5px;line-height:1.5;color:var(--text2)}
+.fork-lbl{font-family:var(--mono);font-size:9px;font-weight:500;text-transform:uppercase;
+  letter-spacing:.14em;margin-bottom:5px}
+.fork-box.yes{background:var(--bsoft);border:1px solid rgba(0,64,255,.28)}
+.fork-box.yes .fork-lbl{color:var(--blue2)}
+.fork-box.no{background:var(--rsoft);border:1px solid var(--rborder)}
+.fork-box.no .fork-lbl{color:var(--red)}
+.fork-box.warn{background:rgba(0,64,255,.07);border:1px solid rgba(0,64,255,.24)}
+.fork-box.warn .fork-lbl{color:#4d7cff}
+.fork-box.neutral{background:var(--gsoft);border:1px solid var(--gborder)}
+.fork-box.neutral .fork-lbl{color:var(--gray)}
+.fork-box .copy-btn{margin-top:8px;font-size:11px;padding:6px 11px}
+.fork-mini-msg{display:block;font-size:11.5px;color:var(--text3);margin-top:6px;
+  font-style:italic;line-height:1.45}
+
+.conn{text-align:center;color:var(--text4);font-family:var(--mono);font-size:9.5px;
+  letter-spacing:.14em;text-transform:uppercase;padding:9px 0;display:flex;
+  align-items:center;justify-content:center;gap:10px}
+.conn::before,.conn::after{content:"";display:inline-block;width:36px;height:1px;background:var(--b2)}
+.divider{height:1px;background:var(--b1);margin:24px 0}
+.tag{display:inline-block;font-family:var(--mono);font-size:9.5px;font-weight:500;
+  letter-spacing:.14em;text-transform:uppercase;padding:4px 11px;border-radius:100px;
+  margin-bottom:10px;background:var(--bsoft);border:1px solid rgba(0,64,255,.28);color:#8aa3ff}
+.roteiro{background:var(--surf);border:1px solid var(--b2);border-radius:var(--r);padding:15px 17px;margin-top:10px}
+.roteiro-lbl{font-family:var(--mono);font-size:9.5px;font-weight:500;text-transform:uppercase;
+  letter-spacing:.18em;color:var(--text4);margin-bottom:11px}
+.roteiro-txt{font-size:13.5px;line-height:1.9;color:var(--text2)}
+.sub-sec-lbl{font-family:var(--mono);font-size:9.5px;font-weight:500;text-transform:uppercase;
+  letter-spacing:.18em;color:var(--text4);margin-bottom:10px;
+  padding:12px 0 0}
+
+footer{max-width:860px;margin:0 auto;border-top:1px solid var(--b1);
+  padding:22px 28px 40px;display:flex;align-items:center;justify-content:space-between;
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;color:var(--text4);
+  position:relative;z-index:2}
+
+@media(max-width:700px){
+  .hdr-in{padding:13px 18px}.hdr-r{display:none}
+  .tabs-wrap{top:68px}.tabs{padding:0 10px}
+  .tab{padding:14px 11px;font-size:9px;letter-spacing:.1em}
+  .content{padding:24px 16px 60px}
+  .view-title{font-size:27px}
+  .step-hdr{padding:13px 14px}.step-title{font-size:14px}
+  .step-body{padding:14px 14px 16px}
+  .fork{grid-template-columns:1fr!important}
+  .fork.three{grid-template-columns:1fr!important}
+  .msg-box{font-size:13px;padding:12px 14px}
+  .copy-btn{font-size:11px;padding:8px 13px}
+  .roteiro{padding:13px 14px}.roteiro-txt{font-size:13px}
+  footer{flex-direction:column;gap:8px;padding:18px 18px 32px}
+}
+@media(max-width:380px){
+  .tab{padding:12px 8px;font-size:8.5px}.view-title{font-size:23px}
+  .step-title{font-size:13px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+<div class="atm-glow"></div>
+<div class="atm-grid"></div>
+
+<div class="hdr">
+  <div class="hdr-in">
+    <div class="hdr-l">
+      <div class="av-wrap">
+        <img class="av" src="data:image/jpeg;base64,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" alt="Gabriel Sales"/>
+        <img class="av-badge" src="data:image/png;base64,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" alt="Verificado"/>
+      </div>
+      <div class="hdr-info">
+        <div class="hdr-name">Fluxo Comercial</div>
+        <div class="hdr-sub">@c.gabrielsales · Uso interno</div>
+      </div>
+    </div>
+    <div class="hdr-r"><span class="pdot"></span><span>Ativo</span></div>
+  </div>
+</div>
+
+<div class="tabs-wrap">
+  <div class="tabs">
+    <div class="tab active" onclick="sw('followup',this)"><span class="tab-n">01</span>Follow-up</div>
+    <div class="tab" onclick="sw('objec',this)"><span class="tab-n">02</span>Objeções</div>
+    <div class="tab" onclick="sw('reativ',this)"><span class="tab-n">03</span>Reativação</div>
+    <div class="tab" onclick="sw('poscall',this)"><span class="tab-n">04</span>Pós-Call</div>
+  </div>
+</div>
+
+<div class="content">
+  <div class="view active" id="view-followup"><div class="view-hdr">
+  <span class="view-eyebrow">01 · Sequência pós-abordagem</span>
+  <h1 class="view-title">Follow-up</h1>
+  <p class="view-sub">Três mensagens depois da abordagem. Cada uma com um ângulo diferente. Fale como quem conversa, não como quem vende.</p>
+</div>
+<div class="step">
+  <div class="step-hdr" onclick="tog('f1',this)">
+    <div class="step-meta">
+      <span class="step-lbl blue">Mesmo dia · ~16h</span>
+      <span class="step-title">D2 · Quebra o silêncio</span>
+      <span class="step-sub">Se não houve resposta até o fim da tarde</span>
+    </div>
+    <span class="chev">▾</span>
+  </div>
+  <div class="step-body" id="f1">
+    <div class="msg-box">Pergunto porque essa é uma situação que acontece em quase toda agência que ainda depende só de indicação.<br><br>Quando a indicação cai, o faturamento cai junto. Tá sendo assim aí também?</div>
+<button class="copy-btn" onclick="cp(this,'Pergunto porque essa é uma situação que acontece em quase toda agência que ainda depende só de indicação.\n\nQuando a indicação cai, o faturamento cai junto. Tá sendo assim aí também?')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copiar</span></button>
+<div class="fork">
+<div class="fork-box yes"><div class="fork-lbl">Respondeu</div>Segue para qualificação</div>
+<div class="fork-box no"><div class="fork-lbl">Sem resposta até ~16h</div>Enviar D3 no dia seguinte</div>
+</div>
+  </div>
+</div>
+<div class="conn">sem resposta</div>
+<div class="step">
+  <div class="step-hdr" onclick="tog('f2',this)">
+    <div class="step-meta">
+      <span class="step-lbl blue">Dia seguinte</span>
+      <span class="step-title">D3 · Prova social com número real</span>
+      <span class="step-sub">Escolha texto ou áudio, nunca os dois</span>
+    </div>
+    <span class="chev">▾</span>
+  </div>
+  <div class="step-body" id="f2">
+    <div class="sub-sec-lbl">Opção A · Texto</div>
+<span class="tag">Trocar [resultado] pelo número real do mês</span>
+<div class="msg-box">Oi, tudo bem?<br><br>Acabei de fechar o mês com uma agência aqui e os números ficaram bem bons [ex. 38 leads qualificados, 9 fechamentos].<br><br>Lembrei de você porque o perfil da agência de vocês é parecido. Se quiser, a gente bate um papo rápido pra eu te explicar o que fiz.</div>
+<button class="copy-btn" onclick="cp(this,'Oi, tudo bem?\n\nAcabei de fechar o mês com uma agência aqui e os números ficaram bem bons [ex. 38 leads qualificados, 9 fechamentos].\n\nLembrei de você porque o perfil da agência de vocês é parecido. Se quiser, a gente bate um papo rápido pra eu te explicar o que fiz.')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copiar</span></button>
+<div class="divider"></div><div class="sub-sec-lbl">Opção B · Áudio (30 a 40 seg)</div>
+<div class="roteiro"><div class="roteiro-lbl">Roteiro</div><div class="roteiro-txt">Oi [nome], aqui é o Gabriel de novo.<br><br>Acabei de fechar o mês com uma agência aqui em [cidade] e os números ficaram bons.<br>Lembrei de você porque o perfil é parecido.<br>O foco não foi aumentar o volume, foi ajustar quem chega pelo anúncio.<br>Se quiser entender melhor como fiz, me chama.</div></div>
+<div class="fork">
+<div class="fork-box yes"><div class="fork-lbl">Respondeu</div>Segue para qualificação</div>
+<div class="fork-box no"><div class="fork-lbl">Sem resposta</div>Enviar D4 no dia seguinte</div>
+</div>
+  </div>
+</div>
+<div class="conn">sem resposta</div>
+<div class="step gray-step">
+  <div class="step-hdr" onclick="tog('f3',this)">
+    <div class="step-meta">
+      <span class="step-lbl gray">Dia seguinte</span>
+      <span class="step-title">D4 · Fecha com elegância</span>
+      <span class="step-sub">Última mensagem da sequência inicial</span>
+    </div>
+    <span class="chev">▾</span>
+  </div>
+  <div class="step-body" id="f3">
+    <div class="msg-box gray">Tudo bem, sem insistência.<br><br>Se em algum momento quiser olhar de perto pra captação de clientes novos, é só me chamar. Bons negócios pra vocês.</div>
+<button class="copy-btn" onclick="cp(this,'Tudo bem, sem insistência.\n\nSe em algum momento quiser olhar de perto pra captação de clientes novos, é só me chamar. Bons negócios pra vocês.')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copiar</span></button>
+<div class="fork">
+<div class="fork-box yes"><div class="fork-lbl">Respondeu depois</div>Voltar para qualificação</div>
+<div class="fork-box neutral"><div class="fork-lbl">Sem resposta</div>Reativação após 15 dias ou mais</div>
+</div>
+  </div>
+</div></div>
+  <div class="view" id="view-objec"><div class="view-hdr">
+  <span class="view-eyebrow">02 · Respostas de campo</span>
+  <h1 class="view-title">Objeções</h1>
+  <p class="view-sub">Cada resposta reabre o diálogo sem discutir. Leia o contexto e escolha uma. Nunca use mais de uma por conversa.</p>
+</div>
+<div class="note">
+      <svg class="note-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r=".5" fill="currentColor"/></svg>
+      Cada resposta reabre o diálogo. Não tenta ganhar o argumento. Use <strong>uma por conversa</strong>, a que mais encaixa no que o lead disse.
+    </div>
+<div class="step red-step">
+  <div class="step-hdr" onclick="tog('o01',this)">
+    <div class="step-meta">
+      <span class="step-lbl red">Objeção 01</span>
+      <span class="step-title">"Já fiz tráfego e não funcionou"</span>
+      <span class="step-sub">Não argumente. Valide a frustração e devolva a conversa pro lado dele.</span>
+    </div>
+    <span class="chev">▾</span>
+  </div>
+  <div class="step-body" id="o01">
+    <div class="msg-box red">Imagino. Isso acontece muito quando a campanha é genérica e não entende o cliente de viagem de verdade.<br><br>No caso de vocês, o que mais pesou, o custo do lead ou o tipo de pessoa que chegava?</div>
+<button class="copy-btn" onclick="cp(this,'Imagino. Isso acontece muito quando a campanha é genérica e não entende o cliente de viagem de verdade.\n\nNo caso de vocês, o que mais pesou, o custo do lead ou o tipo de pessoa que chegava?')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copiar</span></button>
+  </div>
+</div>
+<div class="step red-step">
+  <div class="step-hdr" onclick="tog('o02',this)">
+    <div class="step-meta">
+      <span class="step-lbl red">Objeção 02</span>
+      <span class="step-title">"Já tenho um gestor"</span>
+      <span class="step-sub">Não dispute o profissional. Plante uma dúvida honesta sobre o resultado.</span>
+    </div>
+    <span class="chev">▾</span>
+  </div>
+  <div class="step-body" id="o02">
+    <div class="msg-box red">Boa, ótimo ter alguém dedicado.<br><br>Só por curiosidade, vocês estão satisfeitos com o que tem vindo de retorno do investimento?</div>
+<button class="copy-btn" onclick="cp(this,'Boa, ótimo ter alguém dedicado.\n\nSó por curiosidade, vocês estão satisfeitos com o que tem vindo de retorno do investimento?')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copiar</span></button>
+  </div>
+</div>
+<div class="step red-step">
+  <div class="step-hdr" onclick="tog('o03',this)">
+    <div class="step-meta">
+      <span class="step-lbl red">Objeção 03</span>
+      <span class="step-title">"Não tenho interesse"</span>
+      <span class="step-sub">Não insista no serviço. Faça uma pergunta sobre o negócio dele.</span>
+    </div>
+    <span class="chev">▾</span>
+  </div>
+  <div class="step-body" id="o03">
+    <div class="msg-box red">Tranquilo, sem problema.<br><br>Antes de ir, posso perguntar uma coisa? Os clientes de vocês chegam mais por indicação ou vocês já têm algum canal que traz gente nova todo mês?</div>
+<button class="copy-btn" onclick="cp(this,'Tranquilo, sem problema.\n\nAntes de ir, posso perguntar uma coisa? Os clientes de vocês chegam mais por indicação ou vocês já têm algum canal que traz gente nova todo mês?')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copiar</span></button>
+  </div>
+</div>
+<div class="step red-step">
+  <div class="step-hdr" onclick="tog('o04',this)">
+    <div class="step-meta">
+      <span class="step-lbl red">Objeção 04</span>
+      <span class="step-title">"Não tenho verba agora"</span>
+      <span class="step-sub">Reframe o custo. O que tá sangrando sem anúncio certo pode ser maior.</span>
+    </div>
+    <span class="chev">▾</span>
+  </div>
+  <div class="step-body" id="o04">
+    <div class="msg-box red">Beleza, respeito isso.<br><br>Só um pensamento rápido: tem ideia de quanto tá indo embora em tempo da equipe atendendo lead fora do perfil, cotação que não fecha, esse tipo de coisa?<br><br>Fica à vontade pra me chamar quando o momento tiver mais tranquilo.</div>
+<button class="copy-btn" onclick="cp(this,'Beleza, respeito isso.\n\nSó um pensamento rápido: tem ideia de quanto tá indo embora em tempo da equipe atendendo lead fora do perfil, cotação que não fecha, esse tipo de coisa?\n\nFica à vontade pra me chamar quando o momento tiver mais tranquilo.')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copiar</span></button>
+  </div>
+</div>
+<div class="step red-step">
+  <div class="step-hdr" onclick="tog('o05',this)">
+    <div class="step-meta">
+      <span class="step-lbl red">Objeção 05</span>
+      <span class="step-title">"Agora não é o momento"</span>
+      <span class="step-sub">Âncora no futuro sem pressionar.</span>
+    </div>
+    <span class="chev">▾</span>
+  </div>
+  <div class="step-body" id="o05">
+    <div class="msg-box red">Tudo bem, sem pressa.<br><br>Quando costuma ser melhor pra vocês, fim de mês ou começo do próximo? Anoto aqui e te chamo na época certa.</div>
+<button class="copy-btn" onclick="cp(this,'Tudo bem, sem pressa.\n\nQuando costuma ser melhor pra vocês, fim de mês ou começo do próximo? Anoto aqui e te chamo na época certa.')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copiar</span></button>
+  </div>
+</div>
+<div class="step red-step">
+  <div class="step-hdr" onclick="tog('o06',this)">
+    <div class="step-meta">
+      <span class="step-lbl red">Objeção 06</span>
+      <span class="step-title">"Fazemos tráfego internamente"</span>
+      <span class="step-sub">Valide. Depois planta a dúvida sobre consistência.</span>
+    </div>
+    <span class="chev">▾</span>
+  </div>
+  <div class="step-body" id="o06">
+    <div class="msg-box red">Boa, muito melhor do que ninguém mexendo.<br><br>O que eu vejo em time interno é a consistência, tem mês que vai muito bem e tem mês que oscila. Aí no caso de vocês, tá estável ou às vezes varia um pouco?</div>
+<button class="copy-btn" onclick="cp(this,'Boa, muito melhor do que ninguém mexendo.\n\nO que eu vejo em time interno é a consistência, tem mês que vai muito bem e tem mês que oscila. Aí no caso de vocês, tá estável ou às vezes varia um pouco?')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copiar</span></button>
+  </div>
+</div>
+<div class="step red-step">
+  <div class="step-hdr" onclick="tog('o07',this)">
+    <div class="step-meta">
+      <span class="step-lbl red">Objeção 07</span>
+      <span class="step-title">"Me manda mais informações"</span>
+      <span class="step-sub">Não mande material genérico. Qualifica antes.</span>
+    </div>
+    <span class="chev">▾</span>
+  </div>
+  <div class="step-body" id="o07">
+    <div class="msg-box red">Consigo sim. Mas prefiro te mandar algo que encaixe no momento de vocês, senão vira papel pra ler depois.<br><br>Em uma frase, qual é o maior gargalo hoje pra vocês trazerem cliente novo?</div>
+<button class="copy-btn" onclick="cp(this,'Consigo sim. Mas prefiro te mandar algo que encaixe no momento de vocês, senão vira papel pra ler depois.\n\nEm uma frase, qual é o maior gargalo hoje pra vocês trazerem cliente novo?')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copiar</span></button>
+  </div>
+</div>
+<div class="step red-step">
+  <div class="step-hdr" onclick="tog('o08',this)">
+    <div class="step-meta">
+      <span class="step-lbl red">Objeção 08</span>
+      <span class="step-title">"Me manda o preço primeiro"</span>
+      <span class="step-sub">Preço sem contexto assusta. Ganhe contexto antes.</span>
+    </div>
+    <span class="chev">▾</span>
+  </div>
+  <div class="step-body" id="o08">
+    <div class="msg-box red">Consigo sim, mas o valor muda bastante dependendo do cenário.<br><br>Não quero te passar um número que não tem a ver com a realidade de vocês. Vocês têm uma meta de quantos fechamentos por mês?</div>
+<button class="copy-btn" onclick="cp(this,'Consigo sim, mas o valor muda bastante dependendo do cenário.\n\nNão quero te passar um número que não tem a ver com a realidade de vocês. Vocês têm uma meta de quantos fechamentos por mês?')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copiar</span></button>
+  </div>
+</div>
+<div class="step red-step">
+  <div class="step-hdr" onclick="tog('o09',this)">
+    <div class="step-meta">
+      <span class="step-lbl red">Objeção 09</span>
+      <span class="step-title">"Já tentei e não deu certo"</span>
+      <span class="step-sub">Reconheça que dói, sem minimizar. Curto e direto.</span>
+    </div>
+    <span class="chev">▾</span>
+  </div>
+  <div class="step-body" id="o09">
+    <div class="msg-box red">Saco, essa é uma frustração real.<br><br>Você lembra se o problema foi volume de lead ou a qualidade de quem chegava?</div>
+<button class="copy-btn" onclick="cp(this,'Saco, essa é uma frustração real.\n\nVocê lembra se o problema foi volume de lead ou a qualidade de quem chegava?')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copiar</span></button>
+  </div>
+</div>
+<div class="step red-step">
+  <div class="step-hdr" onclick="tog('o10',this)">
+    <div class="step-meta">
+      <span class="step-lbl red">Objeção 10</span>
+      <span class="step-title">"Não tenho tempo pra isso agora"</span>
+      <span class="step-sub">Tira a barreira operacional. Quem cuida é o gestor.</span>
+    </div>
+    <span class="chev">▾</span>
+  </div>
+  <div class="step-body" id="o10">
+    <div class="msg-box red">Entendo, e é exatamente por isso que quem cuida do operacional sou eu.<br><br>Vocês não precisam entrar em nada. Nossa conversa seria só pra ver se encaixa, te chama quando tiver 15 minutos livre?</div>
+<button class="copy-btn" onclick="cp(this,'Entendo, e é exatamente por isso que quem cuida do operacional sou eu.\n\nVocês não precisam entrar em nada. Nossa conversa seria só pra ver se encaixa, te chama quando tiver 15 minutos livre?')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copiar</span></button>
+  </div>
+</div>
+<div class="step red-step">
+  <div class="step-hdr" onclick="tog('o11',this)">
+    <div class="step-meta">
+      <span class="step-lbl red">Objeção 11</span>
+      <span class="step-title">"Preciso falar com meu sócio"</span>
+      <span class="step-sub">Não pressione. Facilite o próximo passo.</span>
+    </div>
+    <span class="chev">▾</span>
+  </div>
+  <div class="step-body" id="o11">
+    <div class="msg-box red">Claro, é sempre bom alinhar os dois.<br><br>Quando você acha que consegue conversar com ele? Se preferir, a gente pode fazer uma call com vocês dois juntos, aí ninguém precisa repassar depois.</div>
+<button class="copy-btn" onclick="cp(this,'Claro, é sempre bom alinhar os dois.\n\nQuando você acha que consegue conversar com ele? Se preferir, a gente pode fazer uma call com vocês dois juntos, aí ninguém precisa repassar depois.')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copiar</span></button>
+  </div>
+</div>
+<div class="step red-step">
+  <div class="step-hdr" onclick="tog('o12',this)">
+    <div class="step-meta">
+      <span class="step-lbl red">Objeção 12</span>
+      <span class="step-title">"Já estou bem com indicações"</span>
+      <span class="step-sub">Não ataque a indicação. Mostre o risco da dependência.</span>
+    </div>
+    <span class="chev">▾</span>
+  </div>
+  <div class="step-body" id="o12">
+    <div class="msg-box red">Indicação é ouro, sem discussão.<br><br>O risco é que ela depende de terceiros. Quando baixar, o que vocês têm pra segurar o faturamento?</div>
+<button class="copy-btn" onclick="cp(this,'Indicação é ouro, sem discussão.\n\nO risco é que ela depende de terceiros. Quando baixar, o que vocês têm pra segurar o faturamento?')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copiar</span></button>
+  </div>
+</div>
+<div class="step red-step">
+  <div class="step-hdr" onclick="tog('o13',this)">
+    <div class="step-meta">
+      <span class="step-lbl red">Objeção 13</span>
+      <span class="step-title">"Não confio em tráfego pago"</span>
+      <span class="step-sub">Não defenda o canal. Traga prova concreta.</span>
+    </div>
+    <span class="chev">▾</span>
+  </div>
+  <div class="step-body" id="o13">
+    <div class="msg-box red">Entendo, e na verdade eu concordo com quem desconfia disso.<br><br>Tem muita promessa vazia nessa área. Por isso não peço pra acreditar em mim, peço pra ver um resultado recente de quem tá no mesmo segmento. Se quiser, te mostro.</div>
+<button class="copy-btn" onclick="cp(this,'Entendo, e na verdade eu concordo com quem desconfia disso.\n\nTem muita promessa vazia nessa área. Por isso não peço pra acreditar em mim, peço pra ver um resultado recente de quem tá no mesmo segmento. Se quiser, te mostro.')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copiar</span></button>
+  </div>
+</div>
+<div class="step red-step">
+  <div class="step-hdr" onclick="tog('o14',this)">
+    <div class="step-meta">
+      <span class="step-lbl red">Objeção 14</span>
+      <span class="step-title">"Vou pensar e te dou um retorno"</span>
+      <span class="step-sub">Âncora o prazo sem pressionar.</span>
+    </div>
+    <span class="chev">▾</span>
+  </div>
+  <div class="step-body" id="o14">
+    <div class="msg-box red">Beleza, sem pressa.<br><br>Só pra eu não te encher na hora errada, você acha que consegue retornar ainda essa semana ou só na próxima?</div>
+<button class="copy-btn" onclick="cp(this,'Beleza, sem pressa.\n\nSó pra eu não te encher na hora errada, você acha que consegue retornar ainda essa semana ou só na próxima?')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copiar</span></button>
+  </div>
+</div>
+<div class="step red-step">
+  <div class="step-hdr" onclick="tog('o15',this)">
+    <div class="step-meta">
+      <span class="step-lbl red">Objeção 15</span>
+      <span class="step-title">"Minha agência é pequena demais"</span>
+      <span class="step-sub">Reframe o tamanho. Pequeno é o momento de estruturar.</span>
+    </div>
+    <span class="chev">▾</span>
+  </div>
+  <div class="step-body" id="o15">
+    <div class="msg-box red">Pelo contrário, esse é justamente o melhor momento pra começar a estruturar antes de crescer.<br><br>A maioria das agências que atendo hoje começou assim. Hoje vocês tão fazendo quantos fechamentos por mês mais ou menos?</div>
+<button class="copy-btn" onclick="cp(this,'Pelo contrário, esse é justamente o melhor momento pra começar a estruturar antes de crescer.\n\nA maioria das agências que atendo hoje começou assim. Hoje vocês tão fazendo quantos fechamentos por mês mais ou menos?')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copiar</span></button>
+  </div>
+</div>
+<div class="step red-step">
+  <div class="step-hdr" onclick="tog('o16',this)">
+    <div class="step-meta">
+      <span class="step-lbl red">Objeção 16</span>
+      <span class="step-title">"Não sei se anúncio funciona pra viagem"</span>
+      <span class="step-sub">Educa sem parecer professor.</span>
+    </div>
+    <span class="chev">▾</span>
+  </div>
+  <div class="step-body" id="o16">
+    <div class="msg-box red">Funciona sim, mas o cliente de viagem é um pouco diferente, ele pesquisa mais antes de decidir.<br><br>Quando a campanha tá estruturada com isso em mente, o custo por lead qualificado cai bem. Se quiser, te explico melhor em uma conversa rápida.</div>
+<button class="copy-btn" onclick="cp(this,'Funciona sim, mas o cliente de viagem é um pouco diferente, ele pesquisa mais antes de decidir.\n\nQuando a campanha tá estruturada com isso em mente, o custo por lead qualificado cai bem. Se quiser, te explico melhor em uma conversa rápida.')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copiar</span></button>
+  </div>
+</div></div>
+  <div class="view" id="view-reativ"><div class="view-hdr">
+  <span class="view-eyebrow">03 · Leads que esfriaram</span>
+  <h1 class="view-title">Reativação</h1>
+  <p class="view-sub">Espera no mínimo 15 dias antes de usar. Cada cenário tem um ângulo. Nunca repete o mesmo gancho duas vezes com o mesmo lead.</p>
+</div>
+<div class="note">
+      <svg class="note-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r=".5" fill="currentColor"/></svg>
+      <strong>Regra:</strong> troca o ângulo a cada reativação com o mesmo lead. Já usou sazonalidade antes, agora usa resultado. Já usou resultado, agora vai de tom humano. Repetir o mesmo gancho mata a chance.
+    </div>
+<div class="step gray-step">
+  <div class="step-hdr" onclick="tog('r1',this)">
+    <div class="step-meta">
+      <span class="step-lbl gray">Cenário 01</span>
+      <span class="step-title">Sumiu sem motivo claro</span>
+      <span class="step-sub">Parou de responder do nada. Tom leve, sem peso.</span>
+    </div>
+    <span class="chev">▾</span>
+  </div>
+  <div class="step-body" id="r1">
+    <div class="msg-box gray">Oi, tudo certo?<br><br>Só passando pra saber se ficou alguma dúvida do que a gente conversou ou se foi mais questão de momento mesmo.</div>
+<button class="copy-btn" onclick="cp(this,'Oi, tudo certo?\n\nSó passando pra saber se ficou alguma dúvida do que a gente conversou ou se foi mais questão de momento mesmo.')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copiar</span></button>
+  </div>
+</div>
+<div class="step gray-step">
+  <div class="step-hdr" onclick="tog('r2',this)">
+    <div class="step-meta">
+      <span class="step-lbl gray">Cenário 02</span>
+      <span class="step-title">Faltou na call marcada</span>
+      <span class="step-sub">Não apareceu na reunião. Sem drama, sem cobrança.</span>
+    </div>
+    <span class="chev">▾</span>
+  </div>
+  <div class="step-body" id="r2">
+    <div class="msg-box gray">Oi, sem problema, acontece.<br><br>Quer remarcar? Me avisa um horário que fica melhor.</div>
+<button class="copy-btn" onclick="cp(this,'Oi, sem problema, acontece.\n\nQuer remarcar? Me avisa um horário que fica melhor.')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copiar</span></button>
+  </div>
+</div>
+<div class="step gray-step">
+  <div class="step-hdr" onclick="tog('r3',this)">
+    <div class="step-meta">
+      <span class="step-lbl gray">Cenário 03</span>
+      <span class="step-title">Esfriou depois do preço</span>
+      <span class="step-sub">Sumiu depois de receber o valor. Vá direto, sem rodeio.</span>
+    </div>
+    <span class="chev">▾</span>
+  </div>
+  <div class="step-body" id="r3">
+    <div class="msg-box gray">Oi, posso ser direto?<br><br>O que travou foi o valor em si ou ficou alguma dúvida sobre o que dá pra conseguir com esse investimento?</div>
+<button class="copy-btn" onclick="cp(this,'Oi, posso ser direto?\n\nO que travou foi o valor em si ou ficou alguma dúvida sobre o que dá pra conseguir com esse investimento?')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copiar</span></button>
+  </div>
+</div>
+<div class="step gray-step">
+  <div class="step-hdr" onclick="tog('r4',this)">
+    <div class="step-meta">
+      <span class="step-lbl gray">Cenário 04</span>
+      <span class="step-title">Gancho de sazonalidade</span>
+      <span class="step-sub">Alta temporada, feriado, data forte. Conecta a época com o negócio.</span>
+    </div>
+    <span class="chev">▾</span>
+  </div>
+  <div class="step-body" id="r4">
+    <div class="msg-box gray">Oi, tudo bem?<br><br>A demanda por pacotes costuma subir nessa época e lembrei de vocês. Se quiser, a gente retoma a conversa.</div>
+<button class="copy-btn" onclick="cp(this,'Oi, tudo bem?\n\nA demanda por pacotes costuma subir nessa época e lembrei de vocês. Se quiser, a gente retoma a conversa.')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copiar</span></button>
+  </div>
+</div>
+<div class="step gray-step">
+  <div class="step-hdr" onclick="tog('r5',this)">
+    <div class="step-meta">
+      <span class="step-lbl gray">Cenário 05</span>
+      <span class="step-title">Resultado novo pra contar</span>
+      <span class="step-sub">Você fechou um mês bom. Use o número real.</span>
+    </div>
+    <span class="chev">▾</span>
+  </div>
+  <div class="step-body" id="r5">
+    <span class="tag">Trocar [resultado concreto] pelo número real</span>
+<div class="msg-box gray">Oi!<br><br>Acabei de fechar o mês com uma agência aqui e chegamos a [resultado concreto, ex. 38 leads qualificados, 9 fechamentos].<br><br>Lembrei de vocês porque o perfil é parecido, se quiser a gente troca uma ideia.</div>
+<button class="copy-btn" onclick="cp(this,'Oi!\n\nAcabei de fechar o mês com uma agência aqui e chegamos a [resultado concreto, ex. 38 leads qualificados, 9 fechamentos].\n\nLembrei de vocês porque o perfil é parecido, se quiser a gente troca uma ideia.')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copiar</span></button>
+  </div>
+</div>
+<div class="step gray-step">
+  <div class="step-hdr" onclick="tog('r6',this)">
+    <div class="step-meta">
+      <span class="step-lbl gray">Cenário 06</span>
+      <span class="step-title">Tentativa final</span>
+      <span class="step-sub">Última mensagem. Sai com dignidade, sem mágoa.</span>
+    </div>
+    <span class="chev">▾</span>
+  </div>
+  <div class="step-body" id="r6">
+    <div class="msg-box gray">Tranquilo, vou deixar quieto então.<br><br>Quando quiser retomar a conversa sobre captação, é só me chamar.</div>
+<button class="copy-btn" onclick="cp(this,'Tranquilo, vou deixar quieto então.\n\nQuando quiser retomar a conversa sobre captação, é só me chamar.')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copiar</span></button>
+  </div>
+</div></div>
+  <div class="view" id="view-poscall"><div class="view-hdr">
+  <span class="view-eyebrow">04 · Após a reunião</span>
+  <h1 class="view-title">Pós-Call</h1>
+  <p class="view-sub">Cada situação pede um ângulo diferente. Leia o contexto antes de escolher. Aqui uma mensagem errada custa o fechamento.</p>
+</div>
+<div class="sec-lbl"><span class="sec-num">01</span><span>Sumiu após a reunião</span></div>
+<div class="step">
+  <div class="step-hdr" onclick="tog('pc1',this)">
+    <div class="step-meta">
+      <span class="step-lbl blue">Mensagem 01</span>
+      <span class="step-title">Check-in humano</span>
+      <span class="step-sub">3 a 5 dias após a reunião sem retorno</span>
+    </div>
+    <span class="chev">▾</span>
+  </div>
+  <div class="step-body" id="pc1">
+    <div class="msg-box">Oi, tudo bem?<br><br>Tava pensando na nossa conversa. O que ficou na sua cabeça depois da reunião? Alguma coisa não ficou clara ou é mais momento mesmo?</div>
+<button class="copy-btn" onclick="cp(this,'Oi, tudo bem?\n\nTava pensando na nossa conversa. O que ficou na sua cabeça depois da reunião? Alguma coisa não ficou clara ou é mais momento mesmo?')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copiar</span></button>
+<div class="fork">
+<div class="fork-box yes"><div class="fork-lbl">Respondeu</div>Retomar ou ir para objeções</div>
+<div class="fork-box no"><div class="fork-lbl">Sem resposta em 3 dias</div>Enviar mensagem 2</div>
+</div>
+  </div>
+</div>
+<div class="conn">sem resposta</div>
+<div class="step">
+  <div class="step-hdr" onclick="tog('pc2',this)">
+    <div class="step-meta">
+      <span class="step-lbl blue">Mensagem 02</span>
+      <span class="step-title">Tira o obstáculo</span>
+      <span class="step-sub">Sem resposta ao check-in</span>
+    </div>
+    <span class="chev">▾</span>
+  </div>
+  <div class="step-body" id="pc2">
+    <div class="msg-box">Só passando por aqui.<br><br>Geralmente quando alguém some depois de uma reunião é uma de duas coisas, ficou uma dúvida sobre o retorno ou o valor pesou mais do que esperava.<br><br>É uma dessas aí ou foi outra coisa?</div>
+<button class="copy-btn" onclick="cp(this,'Só passando por aqui.\n\nGeralmente quando alguém some depois de uma reunião é uma de duas coisas, ficou uma dúvida sobre o retorno ou o valor pesou mais do que esperava.\n\nÉ uma dessas aí ou foi outra coisa?')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copiar</span></button>
+<div class="fork">
+<div class="fork-box yes"><div class="fork-lbl">Respondeu</div>Ir para objeções ou fechar</div>
+<div class="fork-box no"><div class="fork-lbl">Sem resposta em 4 dias</div>Enviar mensagem 3</div>
+</div>
+  </div>
+</div>
+<div class="conn">sem resposta</div>
+<div class="step gray-step">
+  <div class="step-hdr" onclick="tog('pc3',this)">
+    <div class="step-meta">
+      <span class="step-lbl gray">Mensagem 03</span>
+      <span class="step-title">Fecha o ciclo</span>
+      <span class="step-sub">Sem resposta ao obstáculo</span>
+    </div>
+    <span class="chev">▾</span>
+  </div>
+  <div class="step-body" id="pc3">
+    <div class="msg-box gray">Tudo bem, vou deixar espaço.<br><br>Se mudar de ideia e quiser retomar, é só me falar.</div>
+<button class="copy-btn" onclick="cp(this,'Tudo bem, vou deixar espaço.\n\nSe mudar de ideia e quiser retomar, é só me falar.')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copiar</span></button>
+<div class="fork">
+<div class="fork-box neutral"><div class="fork-lbl">Sem resposta</div>Reativação após 15 dias ou mais</div>
+</div>
+  </div>
+</div>
+<div class="divider"></div>
+<div class="sec-lbl"><span class="sec-num">02</span><span>Prometeu retornar e sumiu</span></div>
+<div class="step">
+  <div class="step-hdr" onclick="tog('pc4',this)">
+    <div class="step-meta">
+      <span class="step-lbl blue">Mensagem 01</span>
+      <span class="step-title">Cobra o retorno prometido</span>
+      <span class="step-sub">No dia seguinte ao prazo combinado</span>
+    </div>
+    <span class="chev">▾</span>
+  </div>
+  <div class="step-body" id="pc4">
+    <div class="msg-box">Oi, você tinha falado que ia me dar um retorno.<br><br>Ainda faz sentido avançar ou o momento mudou aí?</div>
+<button class="copy-btn" onclick="cp(this,'Oi, você tinha falado que ia me dar um retorno.\n\nAinda faz sentido avançar ou o momento mudou aí?')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copiar</span></button>
+<div class="fork">
+<div class="fork-box yes"><div class="fork-lbl">Respondeu</div>Retomar ou ir para objeções</div>
+<div class="fork-box neutral"><div class="fork-lbl">Sem resposta</div>Reativação após 15 dias ou mais</div>
+</div>
+  </div>
+</div>
+<div class="divider"></div>
+<div class="sec-lbl"><span class="sec-num">03</span><span>Pediu proposta formal</span></div>
+<div class="step">
+  <div class="step-hdr" onclick="tog('pc5',this)">
+    <div class="step-meta">
+      <span class="step-lbl blue">Mensagem 01</span>
+      <span class="step-title">Logo após enviar o documento</span>
+      <span class="step-sub">Confirma envio e ancora próximo passo</span>
+    </div>
+    <span class="chev">▾</span>
+  </div>
+  <div class="step-body" id="pc5">
+    <div class="msg-box">Acabei de te mandar a proposta.<br><br>Qualquer dúvida sobre os números, me chama. Quando você acha que consegue dar um retorno?</div>
+<button class="copy-btn" onclick="cp(this,'Acabei de te mandar a proposta.\n\nQualquer dúvida sobre os números, me chama. Quando você acha que consegue dar um retorno?')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copiar</span></button>
+<div class="fork">
+<div class="fork-box yes"><div class="fork-lbl">Respondeu</div>Retomar ou fechar</div>
+<div class="fork-box no"><div class="fork-lbl">Sem resposta em 2 dias</div><button class="copy-btn" onclick="cp(this,'Oi, só confirmando se a proposta chegou certinho. Ficou alguma dúvida?')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copiar</span></button><span class="fork-mini-msg">Oi, só confirmando se a proposta chegou certinho. Ficou alguma dúvida?</span></div>
+</div>
+  </div>
+</div>
+<div class="divider"></div>
+<div class="sec-lbl"><span class="sec-num">04</span><span>Vai falar com o sócio</span></div>
+<div class="step">
+  <div class="step-hdr" onclick="tog('pc6',this)">
+    <div class="step-meta">
+      <span class="step-lbl blue">Mensagem 01</span>
+      <span class="step-title">No dia combinado</span>
+      <span class="step-sub">Na data que ele mencionou</span>
+    </div>
+    <span class="chev">▾</span>
+  </div>
+  <div class="step-body" id="pc6">
+    <div class="msg-box">Oi, você tinha falado que ia conversar com o seu sócio. Conseguiram alinhar?</div>
+<button class="copy-btn" onclick="cp(this,'Oi, você tinha falado que ia conversar com o seu sócio. Conseguiram alinhar?')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copiar</span></button>
+<div class="fork three">
+<div class="fork-box yes"><div class="fork-lbl">Positivo</div>Fechar ou agendar call com os dois</div>
+<div class="fork-box warn"><div class="fork-lbl">Objeção</div>Ir para objeções</div>
+<div class="fork-box no"><div class="fork-lbl">Sem resposta em 2 dias</div><button class="copy-btn" onclick="cp(this,'Oi, se precisar de qualquer coisa pra levar pro seu sócio, me chama. Posso te passar o que for mais útil.')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copiar</span></button><span class="fork-mini-msg">Oi, se precisar de qualquer coisa pra levar pro seu sócio, me chama. Posso te passar o que for mais útil.</span></div>
+</div>
+  </div>
+</div>
+<div class="divider"></div>
+<div class="sec-lbl"><span class="sec-num">05</span><span>Pediu desconto</span></div>
+<div class="step">
+  <div class="step-hdr" onclick="tog('pc7',this)">
+    <div class="step-meta">
+      <span class="step-lbl blue">Mensagem 01</span>
+      <span class="step-title">Resposta ao pedido de redução</span>
+      <span class="step-sub">Lead pediu valor menor</span>
+    </div>
+    <span class="chev">▾</span>
+  </div>
+  <div class="step-body" id="pc7">
+    <div class="msg-box">Te entendo.<br><br>O valor que passei já é o mínimo pro tipo de entrega que faço. O que consigo fazer é mexer no escopo.<br><br>O que seria mais fácil reduzir aí, o volume de campanhas ou a quantidade de canais?</div>
+<button class="copy-btn" onclick="cp(this,'Te entendo.\n\nO valor que passei já é o mínimo pro tipo de entrega que faço. O que consigo fazer é mexer no escopo.\n\nO que seria mais fácil reduzir aí, o volume de campanhas ou a quantidade de canais?')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copiar</span></button>
+<div class="fork">
+<div class="fork-box yes"><div class="fork-lbl">Aceita ajuste</div>Reformular escopo e fechar</div>
+<div class="fork-box no"><div class="fork-lbl">Insiste no desconto</div><button class="copy-btn" onclick="cp(this,'Não consigo baixar o preço sem mexer no que eu entrego.\n\nQuando o momento for mais tranquilo aí, é só me chamar.')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copiar</span></button><span class="fork-mini-msg">Não consigo baixar o preço sem mexer no que eu entrego.
+
+Quando o momento for mais tranquilo aí, é só me chamar.</span></div>
+</div>
+  </div>
+</div></div>
+</div>
+
+<footer>
+  <div>© 2026 · @c.gabrielsales</div>
+  <div>Uso interno · Não distribuir</div>
+</footer>
+
+<script>
+function tog(id,h){
+  const b=document.getElementById(id),c=h&&h.querySelector('.chev');
+  if(!b)return;const o=b.classList.contains('open');
+  b.classList.toggle('open');if(h)h.classList.toggle('open',!o);if(c)c.classList.toggle('open',!o);
+}
+function sw(n,el){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  const v=document.getElementById('view-'+n);if(v)v.classList.add('active');
+  if(el)el.classList.add('active');window.scrollTo({top:0,behavior:'smooth'});
+}
+function cp(btn,text){
+  const ok=()=>{
+    btn.classList.add('copied');
+    btn.innerHTML=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Copiado</span>`;
+    setTimeout(()=>{btn.classList.remove('copied');btn.innerHTML=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copiar</span>`;},1800);
+  };
+  navigator.clipboard&&navigator.clipboard.writeText(text).then(ok).catch(()=>fb(btn,text,ok))||fb(btn,text,ok);
+}
+function fb(btn,text,ok){
+  const t=document.createElement('textarea');t.value=text;document.body.appendChild(t);
+  t.select();document.execCommand('copy');document.body.removeChild(t);ok();
+}
+</script>
+</body>
+</html>
