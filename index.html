@@ -146,7 +146,7 @@ body {
 .topbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   padding: 22px 0 0;
   font-family: var(--font-mono);
   font-size: 10px;
@@ -618,6 +618,64 @@ body {
 @keyframes blink {
   0%, 50% { opacity: 1; }
   51%, 100% { opacity: 0.3; }
+}
+
+/* ─────────── COMING SOON LINK (ZFlow Aut) ─────────── */
+.link-card.coming-soon {
+  cursor: not-allowed;
+  opacity: 0.55;
+  background: linear-gradient(180deg, rgba(74, 222, 128, 0.04) 0%, rgba(13, 16, 25, 0.8) 100%);
+  border: 1px solid rgba(74, 222, 128, 0.2);
+  border-style: dashed;
+}
+
+.link-card.coming-soon:hover {
+  transform: none;
+  opacity: 0.7;
+  border-color: rgba(74, 222, 128, 0.32);
+  background: linear-gradient(180deg, rgba(74, 222, 128, 0.06) 0%, rgba(13, 16, 25, 0.8) 100%);
+}
+
+.link-card.coming-soon:active {
+  transform: none;
+}
+
+.link-card.coming-soon .link-icon {
+  color: #4ade80;
+}
+
+.link-card.coming-soon .link-arrow {
+  display: none;
+}
+
+.coming-tag {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(74, 222, 128, 0.9);
+  font-weight: 500;
+  z-index: 2;
+  padding: 3px 9px;
+  border: 1px solid rgba(74, 222, 128, 0.32);
+  border-radius: 100px;
+  background: rgba(74, 222, 128, 0.06);
+}
+
+.coming-tag::before {
+  content: "";
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  background: #4ade80;
+  border-radius: 50%;
+  margin-right: 6px;
+  margin-bottom: 2px;
+  vertical-align: middle;
+  animation: blink 2s ease-in-out infinite;
 }
 
 .link-card.featured .link-title {
@@ -1298,7 +1356,6 @@ body {
       <span class="pulse-dot"></span>
       <span>Aceitando novos clientes</span>
     </div>
-    <div>@c.gabrielsales</div>
   </div>
 
   <!-- HERO -->
@@ -1319,17 +1376,17 @@ body {
     <div class="hero-role">Gestor de tráfego pago</div>
 
     <p class="hero-desc">
-      Expert em <em>Meta Ads</em> e <em>Google Ads</em>.
+      Expert no <em>Meta Ads</em> & <em>Google Ads</em>.
     </p>
 
     <!-- STATS -->
     <div class="stats">
       <div class="stat">
         <div class="stat-num"><em>+</em>20</div>
-        <div class="stat-label">Clientes atendidos</div>
+        <div class="stat-label">Clientes ativos</div>
       </div>
       <div class="stat">
-        <div class="stat-num">R$ <em>2M</em></div>
+        <div class="stat-num"><em>+</em>R$ 2M</div>
         <div class="stat-label">Investidos em mídia</div>
       </div>
     </div>
@@ -1363,25 +1420,6 @@ body {
       </svg>
     </button>
 
-    <!-- Instagram -->
-    <a class="link-card" href="https://instagram.com/c.gabrielsales" target="_blank" rel="noopener">
-      <div class="link-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="2" y="2" width="20" height="20" rx="5"/>
-          <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
-          <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
-        </svg>
-      </div>
-      <div class="link-text">
-        <div class="link-title">Instagram</div>
-        <div class="link-sub">@c.gabrielsales</div>
-      </div>
-      <svg class="link-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="7" y1="17" x2="17" y2="7"/>
-        <polyline points="7 7 17 7 17 17"/>
-      </svg>
-    </a>
-
     <!-- WhatsApp -->
     <a class="link-card" href="https://wa.me/5579998157108" target="_blank" rel="noopener">
       <div class="link-icon">
@@ -1399,6 +1437,47 @@ body {
         <polyline points="7 7 17 7 17 17"/>
       </svg>
     </a>
+
+    <!-- Feedback -->
+    <a class="link-card" href="https://www.instagram.com/stories/highlights/17966751044755305/" target="_blank" rel="noopener">
+      <div class="link-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="2" width="20" height="20" rx="5"/>
+          <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+          <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+        </svg>
+      </div>
+      <div class="link-text">
+        <div class="link-title">Feedback</div>
+        <div class="link-sub">@c.gabrielsales</div>
+      </div>
+      <svg class="link-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="7" y1="17" x2="17" y2="7"/>
+        <polyline points="7 7 17 7 17 17"/>
+      </svg>
+    </a>
+
+    <!-- ZFlow Aut (em breve) -->
+    <div class="link-card coming-soon" aria-label="ZFlow Aut — em breve">
+      <span class="coming-tag">Em breve</span>
+      <div class="link-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="6" cy="6" r="2.5"/>
+          <circle cx="18" cy="6" r="2.5"/>
+          <circle cx="6" cy="18" r="2.5"/>
+          <circle cx="18" cy="18" r="2.5"/>
+          <path d="M8.5 6h7"/>
+          <path d="M6 8.5v7"/>
+          <path d="M18 8.5v7"/>
+          <path d="M8.5 18h7"/>
+          <path d="M8 8l8 8"/>
+        </svg>
+      </div>
+      <div class="link-text">
+        <div class="link-title">ZFlow Aut</div>
+        <div class="link-sub">Automações e disparos em massa</div>
+      </div>
+    </div>
 
   </div>
 
